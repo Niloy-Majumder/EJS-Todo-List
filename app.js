@@ -8,8 +8,9 @@ app.use(express.static("./public"));
 app.set("view engine", "ejs");
 
 var newitems = ["Buy Food", "Eat Food"];
+let workitems = [];
 var today = new Date();
-var currentDay = today.getDay();
+var currentyear = today.getFullYear();
 var day = today.toLocaleDateString("default", {
   weekday: "long"
 });
@@ -17,15 +18,31 @@ var day = today.toLocaleDateString("default", {
 app.get("/", (req, res) => {
   res.render("lists", {
     renderday: day,
-    item: newitems
+    item: newitems,
+    year: currentyear,
   });
 });
 
+app.get("/work", (req, res) => {
+  res.render("lists", {
+    renderday: "Workday",
+    item: workitems,
+    year: currentyear,
+  })
+})
+
 app.post("/", (req, res) => {
-  var newitem = req.body.listitem;
-  newitems.push(newitem);
-  res.redirect("/");
+  if (req.body.button === "Workday") {
+    var workitem = req.body.listitem;
+    workitems.push(workitem);
+    res.redirect("/work");
+  } else {
+    var newitem = req.body.listitem;
+    newitems.push(newitem);
+    res.redirect("/");
+  }
 });
+
 
 app.listen(3000, () => {
   console.log("Server running at port 3000");
