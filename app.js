@@ -68,11 +68,20 @@ app.post("/", (req, res) => {
     res.redirect("/work");
   } else {
     var newitem = req.body.listitem;
-    newitems.push(newitem);
+    const items = new Item({
+      name: newitem
+    })
+    items.save();
     res.redirect("/");
   }
 });
 
+app.post("/delete", (req, res) => {
+  const deleteId = req.body.checkbox;
+  Item.findByIdAndRemove(deleteId, () => {
+    res.redirect("/");
+  })
+})
 
 app.listen(3000, () => {
   console.log("Server running at port 3000");
