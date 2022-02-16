@@ -25,8 +25,7 @@ const item2 = new Item({
 const defaultItems = [item1, item2];
 
 
-var newitems = [];
-let workitems = [];
+
 var today = new Date();
 var currentyear = today.getFullYear();
 var day = today.toLocaleDateString("default", {
@@ -53,27 +52,16 @@ app.get("/", (req, res) => {
 
 });
 
-app.get("/work", (req, res) => {
-  res.render("lists", {
-    renderday: "Workday",
-    item: workitems,
-    year: currentyear,
-  })
-})
+
 
 app.post("/", (req, res) => {
-  if (req.body.button === "Workday") {
-    var workitem = req.body.listitem;
-    workitems.push(workitem);
-    res.redirect("/work");
-  } else {
-    var newitem = req.body.listitem;
-    const items = new Item({
-      name: newitem
-    })
-    items.save();
-    res.redirect("/");
-  }
+
+  var newitem = req.body.listitem;
+  const items = new Item({
+    name: newitem
+  })
+  items.save();
+  res.redirect("/");
 });
 
 app.post("/delete", (req, res) => {
