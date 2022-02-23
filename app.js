@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const _ = require("lodash");
+
 
 const app = express();
 app.use(express.urlencoded({
@@ -8,6 +10,8 @@ app.use(express.urlencoded({
 app.use(express.static("./public"));
 app.set("view engine", "ejs");
 
+
+
 mongoose.connect("mongodb://localhost:27017/todolistDB")
   .then(() => {
     console.log("Connected to Mongoose");
@@ -15,6 +19,9 @@ mongoose.connect("mongodb://localhost:27017/todolistDB")
   .catch(() => {
     console.log("Connect Mongoose");
   })
+
+
+
 
 const itemsSchema = new mongoose.Schema({
   name: String
@@ -30,6 +37,9 @@ const item2 = new Item({
 
 const defaultItems = [item1, item2];
 
+
+
+
 const listSchema = new mongoose.Schema({
   name: String,
   items: [itemsSchema]
@@ -37,11 +47,16 @@ const listSchema = new mongoose.Schema({
 
 const List = new mongoose.model("List", listSchema);
 
+
+
+
 var today = new Date();
 var currentyear = today.getFullYear();
 var day = today.toLocaleDateString("default", {
   weekday: "long"
 });
+
+
 
 app.get("/", (req, res) => {
 
@@ -65,7 +80,7 @@ app.get("/", (req, res) => {
 
 
 app.get("/:customListName", (req, res) => {
-  const customListName = req.params.customListName
+  const customListName = _.capitalize(req.params.customListName);
   List.findOne({
     name: customListName
   }, (err, foundList) => {
