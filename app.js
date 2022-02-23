@@ -9,6 +9,12 @@ app.use(express.static("./public"));
 app.set("view engine", "ejs");
 
 mongoose.connect("mongodb://localhost:27017/todolistDB")
+  .then(() => {
+    console.log("Connected to Mongoose");
+  })
+  .catch(() => {
+    console.log("Connect Mongoose");
+  })
 
 const itemsSchema = new mongoose.Schema({
   name: String
@@ -24,7 +30,12 @@ const item2 = new Item({
 
 const defaultItems = [item1, item2];
 
+const listSchema = new mongoose.Schema({
+  name: String,
+  items: [itemsSchema]
+})
 
+const List = new mongoose.model("List", listSchema);
 
 var today = new Date();
 var currentyear = today.getFullYear();
@@ -53,22 +64,76 @@ app.get("/", (req, res) => {
 });
 
 
+app.get("/:customListName", (req, res) => {
+  const customListName = req.params.customListName
+  List.findOne({
+    name: customListName
+  }, (err, foundList) => {
+    if (!err) {
+      if (foundList) {
+        res.render("lists", {
+          renderday: foundList.name,
+          item: foundList.items,
+          year: currentyear
+        })
+      } else {
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        })
+        list.save();
+        res.redirect("/" + customListName);
+      }
+    }
+  })
+
+})
 
 app.post("/", (req, res) => {
 
   var newitem = req.body.listitem;
+  var listname = req.body.button;
   const items = new Item({
     name: newitem
   })
-  items.save();
-  res.redirect("/");
+  if (listname === day) {
+    items.save();
+    res.redirect("/");
+  } else {
+    List.findOne({
+      name: listname
+    }, (err, foundList) => {
+      foundList.items.push(items);
+      foundList.save();
+      res.redirect("/" + listname);
+    })
+  }
+
 });
 
 app.post("/delete", (req, res) => {
   const deleteId = req.body.checkbox;
-  Item.findByIdAndRemove(deleteId, () => {
-    res.redirect("/");
-  })
+  const listName = req.body.listName;
+  if (listName === day) {
+    Item.findByIdAndRemove(deleteId, () => {
+      res.redirect("/");
+    })
+  } else {
+    List.findOneAndUpdate({
+      name: listName
+    }, {
+      $pull: {
+        items: {
+          _id: deleteId
+        }
+      }
+    }, (err, foundlist) => {
+      if (!err) {
+        res.redirect("/" + listName);
+      }
+    })
+  }
+
 })
 
 app.listen(3000, () => {
